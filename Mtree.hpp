@@ -11,7 +11,7 @@ struct Mtree;
 
 float distance(Embedding x, Embedding y);
 void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2);
-void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2);
+void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2);
 
 struct Embedding {
     float * features;
@@ -151,7 +151,7 @@ struct Node {
         promote(allEntries, routingObject1, routingObject2);
 
         std::set<Entry> entries1, entries2;
-        partition(allEntries, entries1, entries2);
+        partition(allEntries, entries1, entries2, routingObject1, routingObject2);
 
         Entry* oldParentEntry = this->parentEntry;
 
@@ -190,7 +190,6 @@ struct Node {
 
 };
 
-
 float distance(Embedding x, Embedding y) {
     assert (x.len == y.len);
     float dist = 0;
@@ -201,9 +200,21 @@ float distance(Embedding x, Embedding y) {
 }
 
 void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
-
+    // Temporally random pick
+    int i =0;
+    for (auto entry : allEntries) {
+        if (i==0) routingObject1 = *(entry.embedding);
+        if (i==1) routingObject2 = *(entry.embedding);
+        i++;
+        if (i>1) return;
+    }
 }
 
-void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2) {
-    
+void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2) {
+    for (auto entry : allEntries) {
+        if (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2) )
+            entries1.insert(entry);
+        else 
+            entries2.insert(entry);
+    }
 }
