@@ -1,14 +1,17 @@
-
+#include <cmath>
 #include <vector>
 #include <set>
 #include <limits>
 #include <assert.h> 
-#include "helper.hpp"
 
 struct Embedding;
 struct Node;
 struct Entry;
 struct Mtree;
+
+float distance(Embedding x, Embedding y);
+void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2);
+void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2);
 
 struct Embedding {
     float * features;
@@ -39,7 +42,11 @@ struct Entry {
     public:
         Entry(Embedding * embedding_, float distanceToParent_, float radius_, Node * subTree_) :
         embedding(embedding_), distanceToParent(distanceToParent_), radius(radius_), subTree(subTree_) {}
-
+    bool operator < (const Entry &other) const { 
+        for (int i=0; i < embedding->len; i++)
+            if (embedding->features[i] != other.embedding->features[i]) return embedding->features[i] < other.embedding->features[i];
+        return true;
+    }
 };
 
 struct Node {
@@ -184,3 +191,19 @@ struct Node {
 };
 
 
+float distance(Embedding x, Embedding y) {
+    assert (x.len == y.len);
+    float dist = 0;
+    for (int i =0 ;i < x.len; i++) {
+        dist += pow(x.features[i] - y.features[i],2);
+    }
+    return sqrt(dist);
+}
+
+void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
+
+}
+
+void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2) {
+    
+}

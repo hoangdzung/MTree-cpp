@@ -1,7 +1,7 @@
 #include "Mtree.hpp"
 
 void Mtree::addObject(Embedding embedding) {
-    size ++;
+    this->size ++;
     this->root->addObject(embedding);
 }
 
