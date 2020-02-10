@@ -23,7 +23,7 @@ float distance(Embedding x, Embedding y) {
     return sqrt(dist);
 }
 
-void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
+void promote(std::vector<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
     // Temporally random pick
     int i =0;
     for (auto entry : allEntries) {
@@ -35,7 +35,7 @@ void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& r
     }
 }
 
-void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2) {
+void partition(std::vector<Entry> allEntries, std::vector<Entry>& entries1, std::vector<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2) {
     // std::cout << "routingObject1 ";
     // printEmbedding(routingObject1);
     // std::cout << "routingObject2 ";
@@ -45,9 +45,9 @@ void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<E
         // printEmbedding(*(entry.embedding));
         // std::cout << (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2)) << std::endl;
         if (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2) )
-            entries1.insert(entry);
+            entries1.push_back(entry);
         else 
-            entries2.insert(entry);
+            entries2.push_back(entry);
     }
 }
 
