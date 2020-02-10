@@ -4,6 +4,8 @@
 # Compiled Object files
 .vscode
 
+test.cpp 
+
 *.slo
 *.lo
 *.o

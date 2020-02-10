@@ -1,3 +1,7 @@
+#ifndef MTREE_H
+#define MTREE_H
+
+#include <iostream>
 #include <cmath>
 #include <vector>
 #include <set>
@@ -12,15 +16,24 @@ struct Mtree;
 float distance(Embedding x, Embedding y);
 void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2);
 void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2);
+void printEmbedding(Embedding embedding);
 
 struct Embedding {
     float * features;
     int len;
     public:
-        Embedding(float * features_, int len_) :
-        features(features_), len(len_) {}
-        Embedding() :
-        features(), len() {}
+        // Embedding(float * features_, int len_) :
+        // features(features_), len(len_) {}
+        // Embedding() :
+        // features(), len() {}
+        Embedding(float * features_, int len_) {
+            features = new float[len_]();
+            len = len_;
+            for (int i =0 ; i< len;i++) {
+                features[i] = features_[i];
+            }
+        }
+        Embedding() {}
 };
 
 struct Mtree {
@@ -41,7 +54,13 @@ struct Entry {
     Node * subTree;
     public:
         Entry(Embedding * embedding_, float distanceToParent_, float radius_, Node * subTree_) :
-        embedding(embedding_), distanceToParent(distanceToParent_), radius(radius_), subTree(subTree_) {}
+        subTree(subTree_) {
+            embedding = new Embedding();
+            *embedding = *embedding_;
+            distanceToParent = distanceToParent_;
+            radius = radius_;
+            subTree = subTree_;
+        }
     bool operator < (const Entry &other) const { 
         for (int i=0; i < embedding->len; i++)
             if (embedding->features[i] != other.embedding->features[i]) return embedding->features[i] < other.embedding->features[i];
@@ -105,23 +124,48 @@ struct Node {
     }
 
     void addObject(Embedding embedding) {
-        if (this->isLeaf) 
+        std::cout << "Address of node " << this << std::endl;
+        std::cout << "Size of node " << this->entries.size() << std::endl;
+        if (this->isLeaf) {
+            std::cout << "addObjectToLeaf" << std::endl;
             this->addObjectToLeaf(embedding);
-        else 
+        } else {
+            std::cout << "addObjectToInner" << std::endl; 
             this->addObjectToInner(embedding);
+        }
+        std::cout << "Inside addObject Method of Node: Done" << std::endl;
     }
 
     void addObjectToLeaf(Embedding embedding) {
         float distanceToParent = -1;
-        if (this->parentEntry->embedding != NULL)
-            distanceToParent = distance(embedding, *(this->parentEntry->embedding));
+        std::cout << "Address of parent Entry " << this->parentEntry << std::endl;
+        std::cout << "Size of entries " << this->entries.size() << std::endl;
+        if (this->parentEntry)  
+            std::cout << "Address of embedding of parent Entry " << this->parentEntry->embedding << std::endl;
+        if (this->parentEntry) {
+            if (this->parentEntry->embedding) {
+                distanceToParent = distance(embedding, *(this->parentEntry->embedding));
+            }
+        }
+        std::cout << "distanceToParent " << distanceToParent << std::endl;
+        std::cout << "new embedding " << std::endl;
+        printEmbedding(embedding);
+        std::cout << "saved  embedding " << std::endl;
+        for (auto entry : this->entries) {
+            printEmbedding(*(entry.embedding));
+        }
         Entry newEntry = {&embedding, distanceToParent, -1, NULL};
-        if (!this->isFull())
+        if (!this->isFull()) {
+            std::cout << "Leaf is not full" << std::endl;
             this->entries.insert(newEntry);
-        else
+        } else {
+            std::cout << "Split node" << std::endl;
             this->split(newEntry);
+        }
         assert(this->isRoot() || this->parentNode);
-
+        for (auto entry : this->entries) {
+            printEmbedding(*(entry.embedding));
+        }
     }
 
     void addObjectToInner(Embedding embedding) {
@@ -145,6 +189,7 @@ struct Node {
         assert(this->isFull());
         Mtree* mtree = this->mtree;
         Node* newNode = new Node (this->isLeaf, mtree, NULL, std::set<Entry>(), NULL);
+        std::cout << "Create new node at address " << newNode << std::endl;
         std::set<Entry> allEntries = this->entries;
         allEntries.insert(newEntry);
         Embedding routingObject1, routingObject2;
@@ -152,9 +197,10 @@ struct Node {
 
         std::set<Entry> entries1, entries2;
         partition(allEntries, entries1, entries2, routingObject1, routingObject2);
-
+        std::cout << "After partition " << entries1.size() << " " << entries2.size() << std::endl;
         Entry* oldParentEntry = this->parentEntry;
-
+        std::cout << "Address of oldParentEntry " << oldParentEntry << std::endl;
+    
         Entry existNodeEntry {&routingObject1, -1, -1, this};
         this->setEntriesAndParentEntry(entries1, &existNodeEntry);
 
@@ -190,31 +236,4 @@ struct Node {
 
 };
 
-float distance(Embedding x, Embedding y) {
-    assert (x.len == y.len);
-    float dist = 0;
-    for (int i =0 ;i < x.len; i++) {
-        dist += pow(x.features[i] - y.features[i],2);
-    }
-    return sqrt(dist);
-}
-
-void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
-    // Temporally random pick
-    int i =0;
-    for (auto entry : allEntries) {
-        if (i==0) routingObject1 = *(entry.embedding);
-        if (i==1) routingObject2 = *(entry.embedding);
-        i++;
-        if (i>1) return;
-    }
-}
-
-void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2) {
-    for (auto entry : allEntries) {
-        if (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2) )
-            entries1.insert(entry);
-        else 
-            entries2.insert(entry);
-    }
-}
+#endif
