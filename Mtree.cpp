@@ -30,20 +30,20 @@ void promote(std::set<Entry> allEntries, Embedding& routingObject1, Embedding& r
         if (i==0) routingObject1 = *(entry.embedding);
         if (i==1) routingObject2 = *(entry.embedding);
         i++;
-        printEmbedding(*(entry.embedding));
+        // printEmbedding(*(entry.embedding));
         // if (i>1) return;
     }
 }
 
 void partition(std::set<Entry> allEntries, std::set<Entry>& entries1, std::set<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2) {
-    std::cout << "routingObject1 ";
-    printEmbedding(routingObject1);
-    std::cout << "routingObject2 ";
-    printEmbedding(routingObject2);
+    // std::cout << "routingObject1 ";
+    // printEmbedding(routingObject1);
+    // std::cout << "routingObject2 ";
+    // printEmbedding(routingObject2);
 
     for (auto entry : allEntries) {
-        printEmbedding(*(entry.embedding));
-        std::cout << (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2)) << std::endl;
+        // printEmbedding(*(entry.embedding));
+        // std::cout << (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2)) << std::endl;
         if (distance(*(entry.embedding), routingObject1) < distance(*(entry.embedding), routingObject2) )
             entries1.insert(entry);
         else 
