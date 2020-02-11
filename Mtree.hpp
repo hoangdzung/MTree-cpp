@@ -106,6 +106,12 @@ struct Node {
         this->parentEntry = parentEntry;
         this->parentEntry->radius = updateRadius(parentEntry->embedding);
         this->updateEntryDistanceToParent();
+        if (!this->isLeaf) {
+            for (auto& entry : this->entries) {
+                // std::cout << entry.distanceToParent << std::endl;
+                entry.subTree->parentNode = this;
+            }
+        }
     
     }
 
