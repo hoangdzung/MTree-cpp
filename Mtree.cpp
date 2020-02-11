@@ -3,9 +3,9 @@
 
 void Mtree::addObject(Embedding embedding) {
     this->size ++;
-    std::cout << "Check info of node root " << std::endl;
-    std::cout << "isLeaf " << this->root->isLeaf << " number of entries " << this->root->entries.size() << std::endl;
-    std::cout << "isRoot " << this->root->isRoot() << std::endl;
+    // std::cout << "Check info of node root " << std::endl;
+    // std::cout << "isLeaf " << this->root->isLeaf << " number of entries " << this->root->entries.size() << std::endl;
+    // std::cout << "isRoot " << this->root->isRoot() << std::endl;
     this->root->addObject(embedding);
 }
 
@@ -25,13 +25,23 @@ float distance(Embedding x, Embedding y) {
 
 void promote(std::vector<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2) {
     // Temporally random pick
-    int i =0;
-    for (auto entry : allEntries) {
-        if (i==0) routingObject1 = *(entry.embedding);
-        if (i==1) routingObject2 = *(entry.embedding);
-        i++;
-        // printEmbedding(*(entry.embedding));
-        // if (i>1) return;
+    // int i =0;
+    // for (auto entry : allEntries) {
+    //     if (i==0) routingObject1 = *(entry.embedding);
+    //     if (i==1) routingObject2 = *(entry.embedding);
+    //     i++;
+    //     // printEmbedding(*(entry.embedding));
+    //     // if (i>1) return;
+    // }
+    float maxDistance = 0;
+    for (int i=0; i < allEntries.size() ;i++) {
+        for (int j=i; j< allEntries.size(); j++) {
+            float dist = distance(*(allEntries.at(i).embedding), *(allEntries.at(j).embedding));
+            if (dist>maxDistance) {
+                routingObject1 = *(allEntries.at(i).embedding);
+                routingObject2 = *(allEntries.at(j).embedding);
+            }
+        }
     }
 }
 

@@ -10,7 +10,7 @@ int main(int argc, char const *argv[]) {
     std::cout << mtree.maxNodeSize << " "  << mtree.root->mtree->maxNodeSize << std::endl;
     std::cout << "Address of mtree " << &mtree << " " << mtree.root->mtree << std::endl;
     std::cout << "Address of root of mtree " << mtree.root  << std::endl;
-    for (float i = 0 ; i < 5;i++) {
+    for (float i = 0 ; i < 100;i++) {
         float features[5] = {i+1,i+2,i+3,i+4,i+5};
         Embedding embedding = {features, 5};
         std::cout << "add Object " << i << std::endl;
