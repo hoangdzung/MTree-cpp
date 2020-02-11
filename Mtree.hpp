@@ -16,7 +16,9 @@ struct Mtree;
 float distance(Embedding x, Embedding y);
 void promote(std::vector<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2);
 void partition(std::vector<Entry> allEntries, std::vector<Entry>& entries1, std::vector<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2);
+std::vector<Embedding> queryRange(Node * node, Embedding embedding, float range);
 void printEmbedding(Embedding embedding);
+void printTree(Mtree mtree);
 
 struct Embedding {
     float * features;

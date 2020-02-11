@@ -1,4 +1,5 @@
 #include <iostream>
+#include <queue>
 #include "Mtree.hpp"
 
 void Mtree::addObject(Embedding embedding) {
@@ -12,6 +13,30 @@ void Mtree::addObject(Embedding embedding) {
 Mtree::Mtree(int maxNodeSize_) {
     maxNodeSize = maxNodeSize_;
     this->root = new Node(true, this);
+}
+
+std::vector<Embedding> queryRange(Node * N, Embedding embedding, float range){
+    std::vector<Embedding> results;
+    Entry * Op = N->parentEntry;
+    if (!N->isLeaf) {
+        for (auto Or : N->entries) {
+            if (abs( distance(*(Op->embedding), embedding) - Or.distanceToParent ) <= range + Or.radius) {
+                if (distance(*(Or.embedding), embedding) <= range + Or.radius) {
+                    std::vector<Embedding> tempResults = queryRange(Or.subTree, embedding, range);
+                    results.insert(results.end(), tempResults.begin(), tempResults.end());
+                }
+            }
+        }
+    } else {
+        for (auto Oj : N->entries) {
+            if (abs( distance(*(Op->embedding), embedding) - Oj.distanceToParent ) <= range) {
+                if (distance(*(Oj.embedding), embedding) <= range) {
+                    results.push_back(*(Oj.embedding));
+                }
+            }
+        }
+    }
+    return results;
 }
 
 float distance(Embedding x, Embedding y) {
@@ -40,6 +65,7 @@ void promote(std::vector<Entry> allEntries, Embedding& routingObject1, Embedding
             if (dist>maxDistance) {
                 routingObject1 = *(allEntries.at(i).embedding);
                 routingObject2 = *(allEntries.at(j).embedding);
+                maxDistance = dist;
             }
         }
     }
@@ -66,4 +92,36 @@ void printEmbedding(Embedding embedding) {
     for (int i =0;i < embedding.len;i++)
         std::cout << embedding.features[i] << " ";
     std::cout << " ]" << std::endl;
+}
+
+void printTree(Mtree mtree) {
+    std::queue<Node*> nodeQueue;
+    std::cout << "Queue is created" << std::endl;
+    std::cout << "Add root of tree " << mtree.root << std::endl;
+    nodeQueue.push(mtree.root);
+    while(!nodeQueue.empty()) {
+        Node * node = nodeQueue.front();
+        std::cout << "-------------------------" << std::endl;
+        if (node->isLeaf)
+            std::cout << "Address of leaf node " << node << std::endl;
+        else 
+            std::cout << "Address of inner node " << node << std::endl;
+        // ->embedding->features[0] <<  std::endl;
+        nodeQueue.pop();
+
+        if (node == NULL) continue;
+        if (node->parentEntry) {
+            std::cout << "parentEntry" << node->parentEntry->embedding->features[0] << "(" << node->parentEntry->radius << ")" << std::endl;
+        }
+        else {
+            std::cout << "empty Entry" <<  std::endl;
+        }
+        for (auto entry : node->entries) {
+            std::cout << entry.embedding->features[0] << "(" << entry.radius << ")" << " ";
+            if (!node->isLeaf)
+                nodeQueue.push(entry.subTree);
+        }
+        std::cout << std::endl;
+        std::cout << "-------------------------" << std::endl;
+    }
 }
