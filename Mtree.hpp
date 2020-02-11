@@ -17,23 +17,26 @@ float distance(Embedding x, Embedding y);
 void promote(std::vector<Entry> allEntries, Embedding& routingObject1, Embedding& routingObject2);
 void partition(std::vector<Entry> allEntries, std::vector<Entry>& entries1, std::vector<Entry>& entries2, const Embedding& routingObject1, const Embedding& routingObject2);
 std::vector<Embedding> queryRange(Node * node, Embedding embedding, float range);
+std::set<int> diversedQueryRange(Mtree mtree, Embedding embedding, float range, int k);
 void printEmbedding(Embedding embedding);
 void printTree(Mtree mtree);
 
 struct Embedding {
     float * features;
     int len;
+    int id;
     public:
         // Embedding(float * features_, int len_) :
         // features(features_), len(len_) {}
         // Embedding() :
         // features(), len() {}
-        Embedding(float * features_, int len_) {
+        Embedding(float * features_, int len_, int id_) {
             features = new float[len_]();
             len = len_;
             for (int i =0 ; i< len;i++) {
                 features[i] = features_[i];
             }
+            id = id_;
         }
         Embedding() {}
 };
@@ -146,7 +149,7 @@ struct Node {
     }
 
     void addObject(Embedding embedding) {
-        std::cout << "Try to add " << embedding.features[0] << " to " << this << std::endl;
+        // std::cout << "Try to add " << embedding.features[0] << " to " << this << std::endl;
         // std::cout << "Address of node " << this << std::endl;
         // std::cout << "Size of node " << this->entries.size() << std::endl;
         if (this->isLeaf) {
@@ -246,7 +249,7 @@ struct Node {
         assert(this->isFull());
         Mtree* mtree = this->mtree;
         Node* newNode = new Node (this->isLeaf, mtree);
-        std::cout << "Create new node at address " << newNode << std::endl;
+        // std::cout << "Create new node at address " << newNode << std::endl;
         std::vector<Entry> allEntries = this->entries;
         allEntries.push_back(newEntry);
         Embedding routingObject1, routingObject2;
@@ -271,7 +274,7 @@ struct Node {
         if (this->isRoot()) {
             // std::cout << "The current node is root" << std::endl;
             Node * newRootNode = new Node (false, mtree);
-            std::cout << "Create new root node at address " << newRootNode << std::endl;
+            // std::cout << "Create new root node at address " << newRootNode << std::endl;
             this->parentNode = newRootNode;
             newRootNode->entries.push_back(*existNodeEntry);
             newNode->parentNode = newRootNode;
@@ -281,15 +284,15 @@ struct Node {
         } else {
             // std::cout << "The current node is not root" << std::endl;
             Node * parentNode = this->parentNode;
-            std::cout << "Feature of this at " << this << " " << this->parentEntry->embedding->features[0] << " " << this->parentNode << /*" " << parentNode->parentEntry->embedding->features[0] <<*/ std::endl;
-            std::cout << "isleaf " << this->isLeaf << " " << this->parentNode->isLeaf << std::endl;
-            std::cout << "isroot " << this->isRoot() << " " << this->parentNode->isRoot() << std::endl;
+            // std::cout << "Feature of this at " << this << " " << this->parentEntry->embedding->features[0] << " " << this->parentNode << /*" " << parentNode->parentEntry->embedding->features[0] <<*/ std::endl;
+            // std::cout << "isleaf " << this->isLeaf << " " << this->parentNode->isLeaf << std::endl;
+            // std::cout << "isroot " << this->isRoot() << " " << this->parentNode->isRoot() << std::endl;
             // std::cout << "Address of parentNode " << parentNode << " is root " << parentNode->isRoot() << std::endl;
             if (!parentNode->isRoot()) {
-                std::cout << "Update distanceToParent from " << existNodeEntry->distanceToParent << " " << newNodeEntry->distanceToParent << std::endl;
+                // std::cout << "Update distanceToParent from " << existNodeEntry->distanceToParent << " " << newNodeEntry->distanceToParent << std::endl;
                 existNodeEntry->distanceToParent = distance(*(existNodeEntry->embedding), *(parentNode->parentEntry->embedding));
                 newNodeEntry->distanceToParent = distance(*(newNodeEntry->embedding), *(parentNode->parentEntry->embedding));
-                std::cout << "to " << existNodeEntry->distanceToParent << " " << newNodeEntry->distanceToParent << std::endl;
+                // std::cout << "to " << existNodeEntry->distanceToParent << " " << newNodeEntry->distanceToParent << std::endl;
             } 
             // std::cout << "Entry side " << parentNode->entries.size() << std::endl;
             // parentNode->entries.erase(*oldParentEntry);
@@ -310,7 +313,7 @@ struct Node {
                 // std::cout << equal << std::endl;
                 if (*it == *oldParentEntry) {
                     parentNode->entries.erase(it);
-                    std::cout << "Erased!!!" << std::endl;
+                    // std::cout << "Erased!!!" << std::endl;
                     break;
                 }
             }
@@ -322,7 +325,7 @@ struct Node {
             parentNode->entries.push_back(*existNodeEntry);
 
             if (parentNode->isFull()) {
-                std::cout << "Continue split" << std::endl;
+                // std::cout << "Continue split" << std::endl;
                 parentNode->split(*newNodeEntry);
                 // std::cout << "Split done at " << this <<  std::endl;
             }

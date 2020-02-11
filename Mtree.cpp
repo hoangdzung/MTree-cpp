@@ -18,16 +18,16 @@ Mtree::Mtree(int maxNodeSize_) {
 std::vector<Embedding> queryRange(Node * N, Embedding embedding, float range){
     std::vector<Embedding> results;
     Entry * Op = N->parentEntry;
-    std::cout << "Address of parent object of " << N << ":" << Op << std::endl;
+    // std::cout << "Address of parent object of " << N << ":" << Op << std::endl;
     if (!N->isRoot()) {
         if (!N->isLeaf) {
             for (auto Or : N->entries) {
-                std::cout << "Checking Or ";
-                printEmbedding(*(Or.embedding));
+                // std::cout << "Checking Or ";
+                // printEmbedding(*(Or.embedding));
                 if (abs( distance(*(Op->embedding), embedding) - Or.distanceToParent ) <= range + Or.radius) {
-                    std::cout << distance(*(Or.embedding), embedding) << std::endl;
+                    // std::cout << distance(*(Or.embedding), embedding) << std::endl;
                     if (distance(*(Or.embedding), embedding) <= range + Or.radius) {
-                        std::cout << "pass" << std::endl;
+                        // std::cout << "pass" << std::endl;
                         std::vector<Embedding> tempResults = queryRange(Or.subTree, embedding, range);
                         results.insert(results.end(), tempResults.begin(), tempResults.end());
                     }
@@ -35,12 +35,12 @@ std::vector<Embedding> queryRange(Node * N, Embedding embedding, float range){
             }
         } else {
             for (auto Oj : N->entries) {
-                std::cout << "Checking Oj";
-                printEmbedding(*(Oj.embedding));
+                // std::cout << "Checking Oj";
+                // printEmbedding(*(Oj.embedding));
                 if (abs( distance(*(Op->embedding), embedding) - Oj.distanceToParent ) <= range) {
-                    std::cout << distance(*(Oj.embedding), embedding) << std::endl;
+                    // std::cout << distance(*(Oj.embedding), embedding) << std::endl;
                     if (distance(*(Oj.embedding), embedding) <= range) {
-                        std::cout << "pass" << std::endl;
+                        // std::cout << "pass" << std::endl;
                         results.push_back(*(Oj.embedding));
                         // printEmbedding(*(Oj.embedding));
                     }
@@ -50,24 +50,101 @@ std::vector<Embedding> queryRange(Node * N, Embedding embedding, float range){
     } else {
         if (!N->isLeaf) {
             for (auto Or : N->entries) {
-                std::cout << "Checking Or ";
-                printEmbedding(*(Or.embedding));
-                std::cout << distance(*(Or.embedding), embedding) << std::endl;
+                // std::cout << "Checking Or ";
+                // printEmbedding(*(Or.embedding));
+                // std::cout << distance(*(Or.embedding), embedding) << std::endl;
                 if (distance(*(Or.embedding), embedding) <= range + Or.radius) {
-                    std::cout << "pass" << std::endl;
+                    // std::cout << "pass" << std::endl;
                     std::vector<Embedding> tempResults = queryRange(Or.subTree, embedding, range);
                     results.insert(results.end(), tempResults.begin(), tempResults.end());
                 }
             }
         } else {
             for (auto Oj : N->entries) {
-                std::cout << "Checking Oj";
-                printEmbedding(*(Oj.embedding));
-                std::cout << distance(*(Oj.embedding), embedding) << std::endl;
+                // std::cout << "Checking Oj";
+                // printEmbedding(*(Oj.embedding));
+                // std::cout << distance(*(Oj.embedding), embedding) << std::endl;
                 if (distance(*(Oj.embedding), embedding) <= range) {
-                    std::cout << "pass" << std::endl;
+                    // std::cout << "pass" << std::endl;
                     results.push_back(*(Oj.embedding));
                     // printEmbedding(*(Oj.embedding));
+                }
+            }
+        }
+    }
+    return results;
+}
+
+std::set<int> diversedQueryRange(Mtree mtree, Embedding embedding, float range, int k){
+    std::queue<Node*> nodeQueue;
+    std::set<int> results;
+    // std::cout << "Queue is created" << std::endl;
+    // std::cout << "Add root of tree " << mtree.root << std::endl;
+    nodeQueue.push(mtree.root);
+    while(!nodeQueue.empty() && results.size() < k) {
+        Node * node = nodeQueue.front();
+        Entry * Op = node->parentEntry;
+        nodeQueue.pop();
+
+        if (node == NULL) continue;
+        if (!node->isRoot()) {
+            if (!node->isLeaf) {
+                for (auto Or : node->entries) {
+                    // std::cout << "Checking Or ";
+                    // printEmbedding(*(Or.embedding));
+                    if (abs( distance(*(Op->embedding), embedding) - Or.distanceToParent ) <= range + Or.radius) {
+                        // std::cout << distance(*(Or.embedding), embedding) << std::endl;
+                        float distanceToQuery = distance(*(Or.embedding), embedding);
+                        if (distanceToQuery <= range + Or.radius) {
+                            // std::cout << "pass" << std::endl;
+                            nodeQueue.push(Or.subTree);
+                            if (distanceToQuery <= range) {
+                                results.insert(Or.embedding->id);
+                                if (results.size() >=k) return results;
+                            }
+                        }
+                    }
+                }
+            } else {
+                for (auto Oj : node->entries) {
+                    // std::cout << "Checking Oj";
+                    // printEmbedding(*(Oj.embedding));
+                    if (abs( distance(*(Op->embedding), embedding) - Oj.distanceToParent ) <= range) {
+                        // std::cout << distance(*(Oj.embedding), embedding) << std::endl;
+                        if (distance(*(Oj.embedding), embedding) <= range) {
+                            // std::cout << "pass" << std::endl;
+                            results.insert(Oj.embedding->id);
+                            // printEmbedding(*(Oj.embedding));
+                        }
+                    }
+                }
+            }
+        } else {
+            if (!node->isLeaf) {
+                for (auto Or : node->entries) {
+                    // std::cout << "Checking Or ";
+                    // printEmbedding(*(Or.embedding));
+                    float distanceToQuery = distance(*(Or.embedding), embedding);
+                    // std::cout << distanceToQuery << std::endl;
+                    if (distanceToQuery <= range + Or.radius) {
+                        // std::cout << "pass" << std::endl;
+                        nodeQueue.push(Or.subTree);
+                        if (distanceToQuery <= range) {
+                            results.insert(Or.embedding->id);
+                            if (results.size() >=k) return results;
+                        }
+                    }
+                }
+            } else {
+                for (auto Oj : node->entries) {
+                    // std::cout << "Checking Oj";
+                    // printEmbedding(*(Oj.embedding));
+                    // std::cout << distance(*(Oj.embedding), embedding) << std::endl;
+                    if (distance(*(Oj.embedding), embedding) <= range) {
+                        // std::cout << "pass" << std::endl;
+                        results.insert(Oj.embedding->id);
+                        // printEmbedding(*(Oj.embedding));
+                    }
                 }
             }
         }
@@ -132,8 +209,8 @@ void printEmbedding(Embedding embedding) {
 
 void printTree(Mtree mtree) {
     std::queue<Node*> nodeQueue;
-    // std::cout << "Queue is created" << std::endl;
-    // std::cout << "Add root of tree " << mtree.root << std::endl;
+    std::cout << "Queue is created" << std::endl;
+    std::cout << "Add root of tree " << mtree.root << std::endl;
     nodeQueue.push(mtree.root);
     while(!nodeQueue.empty()) {
         Node * node = nodeQueue.front();
@@ -142,7 +219,6 @@ void printTree(Mtree mtree) {
             std::cout << "Address of leaf node " << node << std::endl;
         else 
             std::cout << "Address of inner node " << node << std::endl;
-        // ->embedding->features[0] <<  std::endl;
         nodeQueue.pop();
 
         if (node == NULL) continue;
